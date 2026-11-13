@@ -413,9 +413,9 @@ T('ship','🚚','Cần xuất kho',O.filter(o=>o.st==='Đã duyệt'&&o.ship==='
 T('dlv','📬','Đang giao, chờ xác nhận',O.filter(o=>o.ship==='Đang giao').map(o=>({t:on(o),s:os(o),b:B('delivered',o.id,'Đã giao')})),'dh');
 T('job','🔧','Máy đã giao, chưa giao lắp',O.filter(o=>o.ship==='Đã giao'&&!quantityTracked(mo(o.model))&&S.serials.some(s=>s.order===o.id&&s.status==='Đã xuất'&&!S.jobs.some(j=>j.sn===s.sn&&j.st!=='Hoàn thành'))).map(o=>({t:on(o),s:os(o),b:B('oJob',o.id,'Giao lắp')})),'dh');
 T('pay','💵','Đơn chưa thu đủ',O.filter(o=>o.st!=='Hủy'&&o.paid<tot(o)).map(o=>({t:on(o),s:'Còn '+vnd(tot(o)-o.paid),b:B('oPay',o.id,'Ghi thu')})),'dh');
-T('wk','🔧','Ca lắp của tôi',S.jobs.filter(j=>opsOwn(j)&&j.st!=='Hoàn thành').map(j=>{const o=od(j.order)||{};return{t:j.sn+' · hẹn '+j.date,s:(o.cust||'')+' · '+(o.addr||''),x:(o.staffNote?'<br>📝 '+esc(o.staffNote):'')+'<br>'+contact(o.phone,o.addr),b:'<button onclick="go(\'ld\')">Mở ca</button>'}}),'ld');
-T('tk','🛠','Yêu cầu bảo hành / sửa chữa',S.tickets.filter(t=>t.st!=='Đã đóng'&&(R==='Kỹ thuật'?opsOwn(t):R==='Admin'||ownSerial(S.serials.find(s=>s.sn===t.sn)))).map(t=>({t:t.id+' · '+t.sn,s:t.sym+' · '+(t.tech||'chưa phân công'),b:t.st==='Chờ phân công'&&opsCan('dispatch')?`<button onclick="assignTicket('${t.id}')">Phân công</button>`:'<button onclick="go(\'bh\')">Mở</button>'})),'bh');
-T('rem','⏰','Nhắc bảo trì trong 15 ngày',S.rem.filter(r=>r.type==='Bảo trì định kỳ'&&r.st!=='Xong'&&r.due<=addD(today(),15)).map(r=>({t:r.sn,s:'Hạn '+r.due+' · '+(r.contact||'Chưa gọi'),b:'<button onclick="go(\'routes\')">Liên hệ</button>'})),'routes');
+T('wk','🔧','Ca lắp của tôi',S.jobs.filter(j=>opsOwn(j)&&j.st!=='Hoàn thành').map(j=>{const o=od(j.order)||{};return{t:j.sn+' · hẹn '+j.date,s:(o.cust||'')+' · '+(o.addr||''),x:(o.staffNote?'<br>📝 '+esc(o.staffNote):'')+'<br>'+contact(o.phone,o.addr),b:'<button onclick="wizOpen(\''+j.id+'\')">Mở ca</button>'}}),'ld');
+T('tk','🛠','Yêu cầu bảo hành / sửa chữa',S.tickets.filter(t=>t.st!=='Đã đóng'&&(R==='Kỹ thuật'?opsOwn(t):R==='Admin'||ownSerial(S.serials.find(s=>s.sn===t.sn)))).map(t=>({t:t.id+' · '+t.sn,s:t.sym+' · '+(t.tech||'chưa phân công'),x:tbar(t),b:t.st==='Chờ phân công'&&opsCan('dispatch')?`<button onclick="assignTicket('${t.id}')">Phân công</button>`:'<button onclick="go(\'bh\')">Mở</button>'})),'bh');
+T('rem','⏰','Nhắc bảo trì trong 15 ngày',S.rem.filter(r=>r.type==='Bảo trì định kỳ'&&r.st!=='Xong'&&r.due<=addD(today(),15)).map(r=>({t:r.sn,s:'Hạn '+r.due+' · '+(r.contact||'Chưa gọi'),x:rbar(r),b:'<button onclick="go(\'routes\')">Liên hệ</button>'})),'routes');
 T('appr','🧾','Phê duyệt chờ xử lý',(S.ops?.approvals||[]).filter(a=>a.status==='Chờ duyệt').map(a=>({t:a.id+' · '+vnd(a.amount),s:a.reason,b:'<button onclick="go(\'approvals\')">Xét duyệt</button>'})),'approvals');
 T('ag','🤝','Đại lý chờ duyệt',S.agents.filter(a=>a.st==='Chờ duyệt'&&!a.directory&&!a.deletedAt).map(a=>({t:a.name,s:a.area,b:allowed('agSt')?`<button onclick="agSt('${a.id}','Hoạt động')">Duyệt</button>`:''})),'dl');
 return L}
@@ -436,4 +436,49 @@ const pc=practiceChoose;practiceChoose=u=>{const r=liveRole();if(trainingMode&&r
 const ps=practiceStart;practiceStart=()=>{if(!trainingMode&&!me)return toast('Hãy đăng nhập bằng tài khoản của bạn trước khi mở diễn tập');return ps()};
 const vp=V.practice;V.practice=()=>{let h=vp();const r=liveRole();if(trainingMode&&r&&r!=='Admin')h=h.replace(/<article class="card"><h3>([^<]*)<\/h3>[\s\S]*?<\/article>/g,(a,x)=>x===r?a:'');return h};
 })();
-</script></body></html>
+</script><style>
+.pb{height:8px;border-radius:99px;background:var(--bd);overflow:hidden;margin:8px 0 4px}.pb i{display:block;height:100%;background:var(--ac);border-radius:99px}
+.wzs{border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0;background:var(--sf)}.wzs.n{border:2px solid var(--ac)}.wzs.d{opacity:.7}.wzs.t{opacity:.5}.wzs h3{margin:0;font-size:15px}.wzs h3 b{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:var(--bd);color:#fff;margin-right:6px}.wzs.d h3 b{background:var(--ok)}.wzs.n h3 b{background:var(--ac)}.wzs .a{display:grid;gap:8px;margin-top:10px}.wzs .a button{min-height:52px;font-size:15px}
+.otl{display:flex;margin-top:10px;font-size:11px;font-weight:400}.otl .s{flex:1;text-align:center;position:relative;color:var(--mu)}.otl .s:before{content:'';position:absolute;top:9px;left:-50%;width:100%;height:3px;background:var(--bd)}.otl .s:first-child:before{display:none}.otl .s i{display:block;width:20px;height:20px;line-height:20px;margin:0 auto 2px;border-radius:50%;background:var(--bd);color:#fff;font-style:normal;position:relative;z-index:1}.otl .s.d{color:var(--ok)}.otl .s.d i,.otl .s.d:before{background:var(--ok)}.otl .s.n{color:var(--ac);font-weight:700}.otl .s.n i{background:var(--ac);box-shadow:0 0 0 4px var(--ac2)}.otnext{font-size:12px;font-weight:400;color:var(--mu);margin-top:6px}
+</style>
+<script>
+/* Luồng nghiệm thu từng bước cho KTV + thanh tiến trình trên thẻ đơn */
+let wizJob=null;
+const WZ=[['Ảnh khởi hành','Chụp ảnh xe và dụng cụ trước khi đi.'],['Check-in tại khách','Bật GPS rồi xác nhận bạn là KTV phụ trách ca này.'],['Lắp xong','Chỉ bấm khi máy đã lắp xong. Hệ thống bắt đầu tính thời gian nhắc đủ ảnh nghiệm thu.'],['Ảnh nghiệm thu','Chụp đủ 3 ảnh bắt buộc.'],['Nghiệm thu & khóa','Nhập pH/TDS, checklist, nhóm bảo trì. Hồ sơ khóa không sửa được.']],PHL=['Kết quả pH/TDS','KTV + khách + sổ + máy','Sổ có chữ ký'];
+const jstate=j=>{const d=[evidenceComplete(j,['Khởi hành']),!!j.checkIn,!!j.physicalDoneAt,evidenceComplete(j,PHL),!!j.lockedAt],k=d.findIndex(x=>!x);return{d,k:k<0?5:k}};
+const jbar=j=>{const k=jstate(j).k;return `<div class="pb"><i style="width:${k*20}%"></i></div><small class="mu">${k>4?'Hoàn tất':'Bước '+(k+1)+'/5 · '+WZ[k][0]}</small>`};
+const jcontact=(ph,a)=>(ph?`<a class="linkbtn" href="tel:${esc(String(ph).replace(/\D/g,''))}">📞 Gọi khách</a>`:'')+(a?`<a class="linkbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}">📍 Chỉ đường</a>`:'');
+window.wizOpen=id=>{wizJob=id;tab='ld';draw();scrollTo(0,0)};
+function wizHTML(j){const {d,k}=jstate(j),o=od(j.order)||{},s=S.serials.find(x=>x.sn===j.sn)||{},w=opsWritable('job',j.id),dis=w?'':' disabled';
+const U=(l,t)=>{const h=j.evidence?.some(f=>f.label===l);return `<button class="${h?'g':''}"${dis} onclick="uploadEvidence('job','${j.id}','${l}')">${h?'✓ Chụp lại · ':'📷 '}${t||l}</button>`};
+const A=[U('Khởi hành','Chụp ảnh khởi hành'),`<button${dis} onclick="checkIn('job','${j.id}')">📍 Check-in & xác nhận phụ trách</button>`,`<button${dis} onclick="markPhysicalDone('${j.id}')">🔧 Đã lắp xong</button>`,PHL.map(l=>U(l)).join(''),`<button${dis} onclick="inst('${j.sn}','${j.id}')">✅ Nhập số đo, checklist & khóa hồ sơ</button>`];
+return `<button class="g s" onclick="wizJob=null;draw()">← Danh sách ca</button><div class="jh"><h2>${esc(j.sn)}</h2><span class="mu">${esc(j.id)} · hẹn ${esc(j.date)} · ${esc(j.tech)}</span></div>${jbar(j)}
+<div class="card" style="margin-top:10px"><b>${esc(o.cust||s.cust||'Chưa có tên khách')}</b><br><span class="mu">${esc(o.addr||s.addr||'Chưa có địa chỉ')}</span><br>${jcontact(o.phone||s.phone,o.addr||s.addr)}${o.staffNote?`<div class="staff-note-panel" style="margin:8px 0 0">📝 ${esc(o.staffNote)}</div>`:''}</div>`+
+(k>4?`<div class="wzs d"><h3>🎉 Hồ sơ đã khóa</h3><p class="mu">Bảo hành ${esc(s.wS||'')} → ${esc(s.wE||'')}. Lịch bảo trì kế tiếp đã được tạo cho CSKH.</p></div>`:'')+
+WZ.map((z,i)=>{const c=d[i]?'d':i===k?'n':'t';return `<div class="wzs ${c}"><h3><b>${d[i]?'✓':i+1}</b>${z[0]}${i===3&&!d[3]?` <span class="tag">${PHL.filter(l=>j.evidence?.some(f=>f.label===l)).length}/3</span>`:''}</h3>${c==='n'?`<p class="mu" style="margin:8px 0 0">${z[1]}</p><div class="a">${A[i]}</div>`:''}</div>`}).join('')}
+const prevLd=V.ld;V.ld=()=>{const j=wizJob&&S.jobs.find(x=>x.id===wizJob&&opsOwn(x));if(wizJob&&!j)wizJob=null;if(j)return (trainingMode?practiceFieldPanel('job'):'')+wizHTML(j);
+let h=prevLd().replace(/<button[^>]*onclick="(?:uploadEvidence|checkIn|markPhysicalDone|inst)\([^"]*"[^>]*>[\s\S]*?<\/button>/g,'');
+return h.replace(/<article class="card"><div class="tb"><h2>([^ <]+) · [\s\S]*?<\/article>/g,(a,id)=>{const jj=S.jobs.find(x=>x.id===id);if(!jj)return a;a=a.replace('<div class="actions">',jbar(jj)+'<div class="actions">');return opsWritable('job',id)?a.replace('<div class="actions">','<div class="actions"><button onclick="wizOpen(\''+id+'\')">▶ '+(jstate(jj).k?'Tiếp tục ca':'Bắt đầu ca')+'</button>'):a})};
+const g0=window.go;window.go=t=>{wizJob=null;g0(t)};
+function ordBar(o){if(o.st==='Hủy')return '<div class="otnext er">Đơn đã hủy</div>';const fin=['Admin','Kinh doanh','Kế toán','Giám đốc','Đại lý'].includes(role),n=S.serials.filter(s=>s.order===o.id&&s.status==='Đã lắp').length;
+const st=[['Đặt',1,''],['Duyệt',o.st==='Đã duyệt','Giám đốc/Admin duyệt đơn'],['Xuất',['Đang giao','Đã giao'].includes(o.ship),'Kho xuất hàng'],['Giao',o.ship==='Đã giao','Kho xác nhận đã giao']];
+if(!quantityTracked(mo(o.model)))st.push(['Lắp',n>=o.qty,'Giao lắp và KTV nghiệm thu ('+n+'/'+o.qty+')']);if(fin)st.push(['Thu',o.pay==='Đã thu','Kế toán ghi nhận thu tiền']);
+const k=st.findIndex(x=>!x[1]);return `<div class="otl">${st.map((x,i)=>`<div class="s ${x[1]?'d':i===k?'n':''}"><i>${x[1]?'✓':i+1}</i>${x[0]}</div>`).join('')}</div><div class="otnext">${k<0?'Hoàn tất toàn bộ':'Tiếp theo: '+st[k][2]}</div>`}
+const prevDh=V.dh;V.dh=()=>prevDh().replace(/(<td data-label="Đơn">)([^<]+)(<br>[^<]*)(<\/td>)/g,(a,p,id,r,e)=>{const o=od(id);return o?p+id+r+ordBar(o)+e:a});
+</script>
+<script>
+/* Thanh tiến trình: yêu cầu bảo hành/sửa chữa và lịch chăm sóc khách hàng */
+const pbar=(st,note)=>{const k=st.findIndex(x=>!x[1]);return `<div class="otl">${st.map((x,i)=>`<div class="s ${x[1]?'d':i===k?'n':''}"><i>${x[1]?'✓':i+1}</i>${x[0]}</div>`).join('')}</div><div class="otnext">${note}</div>`};
+function tbar(t){const sv=t.service,closed=t.st==='Đã đóng'||!!t.lockedAt,ev=t.evidence?.some(f=>f.label==='Sổ có chữ ký');
+const st=[['Tiếp nhận',1,''],['Phân công',!!(t.techUser||t.tech),'CSKH phân công KTV'],['Check-in',!!t.checkIn||closed,'KTV check-in tại khách'],['Xử lý',!!ev||closed,'KTV xử lý và chụp ảnh sổ có chữ ký'],['Đóng',closed,'KTV hoàn tất và khóa hồ sơ']];
+if(closed&&sv?.paid>0&&['Admin','Kế toán','Giám đốc'].includes(role))st.push(['Đối soát',(sv.settled||0)>=sv.paid,'Kế toán đối soát tiền KTV thu hộ ('+vnd(sv.settled||0)+'/'+vnd(sv.paid)+')']);
+const nx=st.find(x=>!x[1]);return pbar(st,(t.st==='Khách hẹn lại'?'Khách hẹn lại · hạn mới '+t.due+'. ':'')+(!closed&&t.due&&t.due<today()?'⚠ Quá hạn xử lý '+t.due+'. ':'')+(nx?'Tiếp theo: '+nx[2]:'Hoàn tất'))}
+function rbar(r){const tk=S.tickets.find(t=>t.reminder===r.id),x=r.st==='Xong',called=(r.contact&&r.contact!=='Chưa gọi')||['Đã liên hệ','Đã phân công','Xong'].includes(r.st),asg=!!tk||['Đã phân công','Xong'].includes(r.st),ok=r.contact==='Đã đồng ý lịch'||asg;
+const st=r.type==='Bảo trì định kỳ'?[['Đến hạn',1,''],['Gọi khách',called,'CSKH gọi khách'],['Chốt lịch',ok,'CSKH chốt lịch với khách'],['Phân công',asg,'CSKH phân công KTV'],['Thực hiện',x||tk?.st==='Đã đóng','KTV thực hiện và đóng ca']]:[['Đến hạn',1,''],['Liên hệ',called,'CSKH liên hệ khách'],['Xong',x,'CSKH xác nhận hoàn tất']];
+const n=Math.round((Date.parse(today())-Date.parse(r.due))/864e5),nx=st.find(y=>!y[1]);
+return pbar(st,(r.contact==='Từ chối'?'Khách từ chối: cần ghi lý do. ':r.contact==='Khách hẹn lại'?'Khách hẹn lại '+(r.visitDate||'')+'. ':'')+(x?'':n>0?'⚠ Quá hạn '+n+' ngày. ':'Còn '+(-n)+' ngày đến hạn. ')+(nx?'Tiếp theo: '+nx[2]:'Hoàn tất'))}
+const pbh=V.bh;V.bh=()=>pbh().replace(/<tr>[\s\S]*?<\/tr>/g,row=>{let m=row.match(/<td data-label="Yêu cầu">([^<]+)<\/td>/);if(m){const t=S.tickets.find(x=>x.id===m[1]);return t?row.replace(m[0],m[0].replace('</td>',tbar(t)+'</td>')):row}
+m=row.match(/<td data-label="Serial">([^<]+)<\/td><td data-label="Loại">([^<]+)<\/td><td data-label="Đến hạn">([^<]+)<\/td>/);if(m){const r=S.rem.find(x=>x.st!=='Xong'&&esc(x.sn)===m[1]&&esc(x.type)===m[2]&&esc(x.due)===m[3]);if(r)return row.replace('<td data-label="Loại">'+m[2]+'</td>','<td data-label="Loại">'+m[2]+rbar(r)+'</td>')}return row});
+const prt=V.routes;V.routes=()=>prt().replace(/<tr>[\s\S]*?<\/tr>/g,row=>{const m=row.match(/<td data-label="(?:Serial \/ khách|Khách \/ máy)">([\s\S]*?)<\/td>/);if(!m)return row;const tk=m[1].split('<br>'),r=S.rem.find(x=>x.type==='Bảo trì định kỳ'&&x.st!=='Xong'&&tk.includes(esc(x.sn)));if(!r)return row;return row.replace(/(<td data-label="(?:Trạng thái liên hệ|Hẹn \/ liên hệ)">[\s\S]*?)(<\/td>)/,(a,p,e)=>p+rbar(r)+e)});
+</script>
+</body></html>
